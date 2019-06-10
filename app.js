@@ -8,7 +8,7 @@ const app = express();
 
 // app.get('/', (req, res) => {
 //     //res.send('<h1>hello2</h1>');
-//     res.sendFile(path.join(__dirname, 'public', 'index.html'));
+//     res.sendFile(path.join(__dirname, 'public', 'app.html'));
 // });
 
 // Handlebars Midlleware 
@@ -28,11 +28,9 @@ app.use(express.urlencoded({extended: false}));
 app.use(logger); 
 
 // Members API Routes
-app.use('/api/members', require('./routes/api/members'));
+app.use('/api/members', require('./api/routes/members'));
 
 // Set the static folder
 app.use(express.static(path.join(__dirname, 'public')));
 
-const PORT = process.env.PORT || 5000;
-
-app.listen(PORT, () => console.log(`Server is running`));
+module.exports = app;
