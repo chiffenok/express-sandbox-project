@@ -30,7 +30,15 @@ app.use(logger);
 // Members API Routes
 app.use('/api/members', require('./api/routes/members'));
 
+// Products API Routes
+const productRoutes = require('./api/routes/products');
+app.use('/api/products', productRoutes);
+
+// Orders API Routes
+const orderRoutes = require('./api/routes/orders');
+app.use('/api/orders', orderRoutes);
+
 // Set the static folder
-app.use(express.static(path.join(__dirname, 'public')));
+// app.use(express.static(path.join(__dirname, 'public')));
 
 module.exports = app;
