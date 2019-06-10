@@ -3,6 +3,7 @@ const exphbs = require('express-handlebars');
 const members = require('./Members');
 const path = require('path');
 const logger = require('./middleware/logger');
+const morgan = require('morgan'); 
 
 const app = express();
 
@@ -24,8 +25,9 @@ app.get('/', (req, res) => res.render('home', {
 app.use(express.json());
 app.use(express.urlencoded({extended: false}));
 
-// Init midddleware
-app.use(logger); 
+// Init midddleware for logging
+// app.use(logger); 
+app.use(morgan('dev'));
 
 // Members API Routes
 app.use('/api/members', require('./api/routes/members'));
@@ -37,6 +39,22 @@ app.use('/api/products', productRoutes);
 // Orders API Routes
 const orderRoutes = require('./api/routes/orders');
 app.use('/api/orders', orderRoutes);
+
+// Error handling
+app.use((req, res, next) => {
+    const error = new Error('Not found');
+    error.status = 404;
+    next(error);
+})
+
+app.use((error, req, res, next) => {
+    res.status(error.status || 500);
+    res.json({
+        error: {
+            msg: error.message
+        }
+    })
+})
 
 // Set the static folder
 // app.use(express.static(path.join(__dirname, 'public')));
