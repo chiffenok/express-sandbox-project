@@ -1,9 +1,9 @@
 const express = require('express');
-const exphbs = require('express-handlebars');
+const exphbs = require('express-handlebars'); 
 const members = require('./Members');
 const path = require('path');
-const logger = require('./middleware/logger');
 const morgan = require('morgan'); 
+const mongoose = require('mongoose');
 
 const app = express();
 
@@ -11,6 +11,11 @@ const app = express();
 //     //res.send('<h1>hello2</h1>');
 //     res.sendFile(path.join(__dirname, 'public', 'app.html'));
 // });
+
+mongoose.connect(
+    'mongodb+srv://annn:' + process.env.MONGO_ATLAS_PWD + '@cluster0-gbr14.mongodb.net/test?retryWrites=true&w=majority',
+    { useNewUrlParser: true }
+    );
 
 // Handlebars Midlleware 
 app.engine('handlebars', exphbs());
@@ -24,6 +29,16 @@ app.get('/', (req, res) => res.render('home', {
 // Body parser
 app.use(express.json());
 app.use(express.urlencoded({extended: false}));
+
+app.use((req, res, next)=>{;
+    res.header('Access-Control-Allow-Origin', '*');
+    res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
+    if (req.method === 'OPTIONS') {
+        res.header('Access-Control-Allow-Methods', 'GET, PUT, POST, DELETE, PATCH');
+        return res.status(200).json({});
+    }
+    next();
+});
 
 // Init midddleware for logging
 // app.use(logger); 
