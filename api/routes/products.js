@@ -5,10 +5,24 @@ const Product = require('../models/products')
 
 router.get('/', (req, res, next) => {
     Product.find()
+        .select("name price _id")
         .exec()
         .then( docs => {
-            console.log(docs);
-            res.status(200).json(docs);
+            const responseBody = {
+                productCount: docs.length,
+                products: docs.map(doc => {
+                    return {
+                        _id: doc._id,
+                        name: doc.name,
+                        price: doc.price,
+                        request: {
+                            type: 'GET',
+                            url: 'http://localhost:5000/api/products/' + doc._id
+                        }  
+                    }
+                }) 
+            }
+            res.status(200).json(responseBody);
         })
         .catch(err => {
             console.log(err);
@@ -26,8 +40,11 @@ router.post('/', (req, res, next) => {
         .then(result => {
             console.log(result);
             res.status(200).json({
-                msg: 'handling POST /products',
-                createdProduct: result
+                createdProduct: {
+                    _id: result._id,
+                    name: result.name,
+                    price: result.price
+                } 
             });
         })
         .catch(err => {
@@ -40,6 +57,7 @@ router.post('/', (req, res, next) => {
 router.get('/:productId', (req, res, next) => {
     const id = req.params.productId;
     Product.findById(id)
+        .select("_id name price")
         .exec()
         .then( doc => {
             console.log(doc);
@@ -57,11 +75,16 @@ router.get('/:productId', (req, res, next) => {
 
 router.patch('/:productId', (req, res, next) => {
     const id = req.params.productId;
-    Product.update({_id: id})
-        .exec()
+    const updateOps = {};
+    for (const ops of req.body) {
+        updateOps[ops.propName] = ops.value;
+    }
+    Product.update({_id: id}, {$set: updateOps})
+        .exec()   
         .then( result => {
-            console.log(result);
-            res.status(200).json(result);
+            res.status(200).json({
+                msg: "Product updated"
+            });
         })
         .catch(err => {
             console.log(err);
@@ -74,8 +97,9 @@ router.delete('/:productId', (req, res, next) => {
     Product.remove({_id: id})
         .exec()
         .then( result => {
-            console.log(result);
-            res.status(200).json(result);
+            res.status(200).json({
+                msg: "Product deleted"
+            });
         })
         .catch(err => {
             console.log(err);
