@@ -53,6 +53,7 @@ app.use((req, res, next) => {
 // Init midddleware for logging
 // app.use(logger);
 app.use(morgan('dev'));
+app.use('/uploads', express.static('uploads'));
 
 // Members API Routes
 app.use('/api/members', require('./api/routes/members'));

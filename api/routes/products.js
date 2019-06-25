@@ -1,11 +1,37 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const router = express.Router();
+const multer = require('multer');
+
+const storage = multer.diskStorage({
+    destination: function(req, file, cb) {
+        cb(null, './uploads/');
+    },
+    filename: function(req, file, cb) {
+        cb(null, new Date().toISOString() + file.originalname);
+    }
+});
+
+const fileFilter = (req, file, cb) => {
+    if (file.mimetype === 'image/jpeg' || file.mimetype === 'image/png') {
+        cb(null, true);
+    } else {
+        cb(null, false);
+    }
+};
+
+const upload = multer({
+    storage,
+    limits: {
+        fieldSize: 1024 * 1024 * 5
+    },
+    fileFilter
+});
 const Product = require('../models/products');
 
 router.get('/', (req, res, next) => {
     Product.find()
-        .select('name price _id')
+        .select('name price _id productImg')
         .exec()
         .then(docs => {
             const responseBody = {
@@ -15,6 +41,7 @@ router.get('/', (req, res, next) => {
                         _id: doc._id,
                         name: doc.name,
                         price: doc.price,
+                        productImg: doc.productImg,
                         request: {
                             type: 'GET',
                             url: 'http://localhost:5000/api/products/' + doc._id
@@ -30,11 +57,12 @@ router.get('/', (req, res, next) => {
         });
 });
 
-router.post('/', (req, res, next) => {
+router.post('/', upload.single('productImg'), (req, res, next) => {
     const product = new Product({
         _id: new mongoose.Types.ObjectId(),
         name: req.body.name,
-        price: req.body.price
+        price: req.body.price,
+        productImg: req.file.path
     });
     product
         .save()
@@ -57,7 +85,7 @@ router.post('/', (req, res, next) => {
 router.get('/:productId', (req, res, next) => {
     const id = req.params.productId;
     Product.findById(id)
-        .select('_id name price')
+        .select('_id name price productImg')
         .exec()
         .then(doc => {
             console.log(doc);
