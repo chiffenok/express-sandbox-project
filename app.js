@@ -66,6 +66,9 @@ app.use('/api/products', productRoutes);
 const orderRoutes = require('./api/routes/orders');
 app.use('/api/orders', orderRoutes);
 
+const userRoutes = require('./api/routes/user');
+app.use('/api/user', userRoutes);
+
 // Error handling
 app.use((req, res, next) => {
     const error = new Error('Not found');
